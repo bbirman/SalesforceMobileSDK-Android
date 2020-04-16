@@ -155,7 +155,8 @@ public class RestRequest {
         OBJECT_LAYOUT(SERVICES_DATA + "%s/ui-api/layout/%s"),
 		COMPOSITE(SERVICES_DATA + "%s/composite"),
         BATCH(SERVICES_DATA + "%s/composite/batch"),
-        SOBJECT_TREE(SERVICES_DATA + "%s/composite/tree/%s");
+        SOBJECT_TREE(SERVICES_DATA + "%s/composite/tree/%s"),
+        NOTIFICATIONS(SERVICES_DATA +"%s/connect/notifications/%s");
 
 		private final String pathTemplate;
 

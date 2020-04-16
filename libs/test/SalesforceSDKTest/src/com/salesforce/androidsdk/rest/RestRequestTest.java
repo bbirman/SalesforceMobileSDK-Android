@@ -29,6 +29,8 @@ package com.salesforce.androidsdk.rest;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
+import com.salesforce.androidsdk.rest.NotificationRequest.FetchNotificationsRequestBuilder;
+import com.salesforce.androidsdk.rest.NotificationRequest.UpdateNotificationsRequestBuilder;
 import com.salesforce.androidsdk.rest.RestRequest.RestMethod;
 import com.salesforce.androidsdk.util.JSONTestHelper;
 
@@ -528,6 +530,38 @@ public class RestRequestTest {
 
         JSONObject actualBodyJson = new JSONObject(bodyToString(request));
 
+        JSONTestHelper.assertSameJSON("Wrong request entity", expectedBodyJson, actualBodyJson);
+    }
+
+    @Test
+    public void testGetNotificationRequest() throws Exception {
+        String notificationId = "testID";
+        RestRequest request = NotificationRequest.getRequestForNotifications(notificationId, TEST_API_VERSION);
+        Assert.assertEquals("Wrong method", RestMethod.GET, request.getMethod());
+        Assert.assertEquals("Wrong path", "/services/data/" + TEST_API_VERSION + "/connect/notifications/" + notificationId, request.getPath());
+    }
+
+    @Test
+    public void testUpdateNotificationRequest() throws Exception {
+        String notificationId = "testID";
+        UpdateNotificationsRequestBuilder builder = new UpdateNotificationsRequestBuilder();
+        builder.setNotificationId(notificationId);
+        RestRequest request = builder.build(TEST_API_VERSION);
+        Assert.assertEquals("Wrong method", RestMethod.PATCH, request.getMethod());
+        Assert.assertEquals("Wrong path", "/services/data/" + TEST_API_VERSION + "/connect/notifications/" + notificationId, request.getPath());
+    }
+
+    @Test
+    public void testUpdateNotificationsRequest()  throws Exception {
+        UpdateNotificationsRequestBuilder builder = new UpdateNotificationsRequestBuilder();
+        List<String> notificationIds = Arrays.asList("testID1", "testID2"); // Best way?
+        builder.setNotificationIds(notificationIds);
+        RestRequest request = builder.build(TEST_API_VERSION);
+        Assert.assertEquals("Wrong method", RestMethod.PATCH, request.getMethod());
+        Assert.assertEquals("Wrong path", "/services/data/" + TEST_API_VERSION + "/connect/notifications/", request.getPath());
+        JSONObject expectedBodyJson = new JSONObject();
+        expectedBodyJson.put("notificationIds", new JSONArray(notificationIds));
+        JSONObject actualBodyJson = new JSONObject(bodyToString(request));
         JSONTestHelper.assertSameJSON("Wrong request entity", expectedBodyJson, actualBodyJson);
     }
 

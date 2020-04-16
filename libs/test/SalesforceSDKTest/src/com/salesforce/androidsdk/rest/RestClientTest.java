@@ -33,6 +33,8 @@ import com.salesforce.androidsdk.app.SalesforceSDKManager;
 import com.salesforce.androidsdk.auth.HttpAccess;
 import com.salesforce.androidsdk.auth.OAuth2;
 import com.salesforce.androidsdk.auth.OAuth2.TokenEndpointResponse;
+import com.salesforce.androidsdk.rest.NotificationRequest.FetchNotificationsRequestBuilder;
+import com.salesforce.androidsdk.rest.NotificationRequest.UpdateNotificationsRequestBuilder;
 import com.salesforce.androidsdk.rest.RestClient.AuthTokenProvider;
 import com.salesforce.androidsdk.rest.RestClient.ClientInfo;
 import com.salesforce.androidsdk.rest.RestRequest.RestMethod;
@@ -56,6 +58,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -981,6 +985,47 @@ public class RestClientTest {
         Assert.assertEquals("wrong number of results for query request", 1, otherQueryRecords.length());
         Assert.assertEquals("Account id not returned by query", accountId, otherQueryRecords.getJSONObject(0).getString("AccountId"));
         Assert.assertEquals("Contact id not returned by query", otherContactId, otherQueryRecords.getJSONObject(0).getString("Id"));
+    }
+
+    @Test
+    public void testGetNotificationsStatus() throws Exception {
+        RestRequest request = NotificationRequest.getRequestForNotificationsStatus("v49.0");
+        RestResponse response = restClient.sendSync(request);
+        checkResponse(response, HttpURLConnection.HTTP_OK, false);
+        checkKeys(response.asJSONObject(), "lastActivity", "oldestUnread", "oldestUnseen", "unreadCount", "unseenCount" );
+
+    }
+
+    @Test
+    public void testGetNotifications() throws Exception {
+        FetchNotificationsRequestBuilder builder = new FetchNotificationsRequestBuilder();
+        Instant yesterday = Instant.now().minus(1, ChronoUnit.DAYS);
+        builder.setAfter(Date.from(yesterday));
+        builder.setSize(10);
+        RestRequest request = builder.build("v49.0");
+        RestResponse response = restClient.sendSync(request);
+        checkResponse(response, HttpURLConnection.HTTP_OK, false);
+        checkKeys(response.asJSONObject(), "notifications");
+    }
+
+    @Test
+    public void testUpdateReadNotifications() throws Exception {
+        UpdateNotificationsRequestBuilder builder = new UpdateNotificationsRequestBuilder();
+        builder.setBefore(new Date());
+        builder.setRead(true);
+        RestRequest request = builder.build("v49.0");
+        RestResponse response = restClient.sendSync(request);
+        checkResponse(response, HttpURLConnection.HTTP_OK, false);
+    }
+
+    @Test
+    public void testUpdateSeenNotifications() throws Exception {
+        UpdateNotificationsRequestBuilder builder = new UpdateNotificationsRequestBuilder();
+        builder.setBefore(new Date());
+        builder.setSeen(true);
+        RestRequest request = builder.build("v49.0");
+        RestResponse response = restClient.sendSync(request);
+        checkResponse(response, HttpURLConnection.HTTP_OK, false);
     }
 
     //
